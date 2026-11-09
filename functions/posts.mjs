@@ -11,12 +11,18 @@ const CORS = {
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8", ...CORS },
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...CORS },
   });
 
 export default async (req, context) => {
   const store = getStore("the-circle-posts");
-  const OWNER_PASS = context.env.OWNER_PASS; // set via `netlify env:set`, never in code
+  let OWNER_PASS = null;
+  try {
+    OWNER_PASS = context?.env?.OWNER_PASS
+      ?? (typeof Netlify !== "undefined" && Netlify.env?.get ? Netlify.env.get("OWNER_PASS") : null);
+  } catch {
+    OWNER_PASS = null;
+  }
 
   // CORS preflight
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -24,8 +30,9 @@ export default async (req, context) => {
   if (req.method === "GET") {
     const pass = req.headers.get("x-owner-pass") ?? "";
     const auth = !!OWNER_PASS && pass.length > 0 && pass === OWNER_PASS;
-    const posts = await store.getJSON("posts");
-    return json({ posts: posts ?? null, auth });
+    const raw = await store.get("posts");
+    const posts = raw ? JSON.parse(raw) : null;
+    return json({ posts, auth });
   }
 
   if (req.method === "POST") {
@@ -57,7 +64,7 @@ export default async (req, context) => {
       }
     }
 
-    await store.setJSON("posts", body.posts);
+    await store.set("posts", JSON.stringify(body.posts));
     return json({ ok: true, count: body.posts.length });
   }
 
