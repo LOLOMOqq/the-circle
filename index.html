@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Circle — dedicated to John Wendell Calzita</title>
+  <meta name="description" content="A journal of friends and timelines of events, dedicated to John Wendell Calzita — Mother Theresa School and De La Salle University - Dasma." />
+  <style>
+    /* ============================================================
+       THE CIRCLE — blog styles
+       Colors live in the :root block below; change accents there.
+       ============================================================ */
+    :root {
+      --bg: #faf9f7;          /* page background */
+      --card: #ffffff;        /* card background */
+      --ink: #1c1b1a;         /* main text */
+      --muted: #76706a;       /* secondary text */
+      --line: #e9e5df;        /* hairline borders */
+      --accent: #c96f4a;      /* terracotta accent */
+      --accent-soft: #f6e8e1; /* soft accent wash */
+      --danger: #b3402a;
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- header ---------- */
+    header.site {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(250, 249, 247, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .site-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      letter-spacing: 0.2px;
+      text-decoration: none;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .logo span { color: var(--accent); }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--ink); }
+
+    /* small pill buttons (search bar, nav, owner controls) */
+    .chip, .btn {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    button.chip, button.btn { cursor: pointer; }
+    .chip.school::before { content: "🎓 "; }
+    .chip.person::before { content: "👤 "; }
+    button.chip:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .btn.owner-btn { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+    .btn.owner-btn:hover { border-color: var(--accent); }
+    .btn.sm { padding: 4px 10px; font-size: 12.5px; }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:hover { opacity: 0.88; color: #fff; }
+    .btn.danger { color: var(--danger); }
+    .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* owner-only controls stay invisible until you sign in */
+    .owner-only { display: none !important; }
+    body.is-owner .owner-only { display: inline-flex !important; }
+
+    /* ---------- hero / dedication ---------- */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 80px 24px 56px;
+    }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(38px, 6vw, 60px);
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+    .hero p.lead {
+      margin-top: 20px;
+      max-width: 50ch;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .hero .rule {
+      width: 56px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-top: 32px;
+    }
+    .dedication {
+      margin-top: 26px;
+      display: inline-block;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .dedication b { color: var(--ink); font-weight: 600; }
+
+    /* ---------- timeline ---------- */
+    .timeline {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 8px 24px 24px;
+      position: relative;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 37px;
+      width: 1px;
+      background: var(--line);
+    }
+    .entry {
+      position: relative;
+      margin-bottom: 72px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .entry.visible { opacity: 1; transform: none; }
+    .entry .dot {
+      position: absolute;
+      left: 31px;
+      top: 7px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 3px solid var(--accent);
+      z-index: 1;
+    }
+    .entry-body { margin-left: 72px; }
+    time {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      margin-bottom: 10px;
+    }
+    .entry h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 28px;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .entry .place-line {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .entry .story { max-width: 62ch; }
+
+    /* ---------- photos ---------- */
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin: 22px 0 0;
+    }
+    .photos.single { grid-template-columns: 1fr; max-width: 480px; }
+    .photo {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--accent-soft);
+      border: 1px solid var(--line);
+    }
+    .photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+    .photo:hover img { transform: scale(1.03); }
+
+    /* ---------- "names are required" panel ---------- */
+    .who {
+      margin-top: 16px;
+      border-left: 3px solid var(--accent);
+      background: var(--card);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 18px;
+    }
+    .who .label {
+      font-size: 11px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .who .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .who .warn { display: none; color: var(--danger); font-size: 13.5px; margin-top: 6px; }
+    .who.incomplete .warn { display: block; }
+
+    /* ---------- owner actions on each post ---------- */
+    .owner-actions { margin-top: 14px; gap: 8px; }
+
+    /* ---------- filter bar (schools) ---------- */
+    .filterbar {
+      max-width: 860px;
+      margin: 16px auto 0;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filterbar .flabel {
+      font-size: 13px;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    /* ---------- school panel (friends per school) ---------- */
+    .results {
+      max-width: 860px;
+      margin: 22px auto 0;
+      padding: 0 24px;
+    }
+    .results .inner {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 26px 30px;
+    }
+    .results.active .inner { display: block; animation: pop 0.3s ease; }
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .results h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+    .results .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .results .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* ---------- about ---------- */
+    section.about {
+      max-width: 860px;
+      margin: 40px auto 0;
+      padding: 8px 24px 0;
+    }
+    section.about > div {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 36px;
+    }
+    section.about h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+    section.about p { color: var(--muted); max-width: 60ch; }
+    section.about p b { color: var(--ink); }
+    section.about p + p { margin-top: 12px; }
+    section.about .schools {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    section.about .schools span {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 13.5px;
+    }
+    section.about .schools span::before { content: "🎓 "; }
+
+    /* ---------- footer ---------- */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 60px 24px 40px;
+    }
+    footer .dedic {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    /* ---------- lightbox ---------- */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 18, 17, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: auto; }
+    .lightbox img { max-width: 92vw; max-height: 80vh; border-radius: 12px; }
+    .lightbox figcaption { color: #e8e2dc; font-size: 15px; padding: 0 24px; text-align: center; }
+    .lightbox .close {
+      position: absolute;
+      top: 18px;
+      right: 26px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    /* ---------- modals (sign-in + post editor) ---------- */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background: rgba(20, 18, 17, 0.55);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 20px;
+      overflow: auto;
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 30px 32px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      animation: pop 0.25s ease;
+    }
+    .modal-card.narrow { max-width: 380px; }
+    .modal h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .modal .hint { color: var(--muted); font-size: 14px; margin: -8px 0 16px; }
+    .field { margin-bottom: 14px; }
+    .field > label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .field input[type="text"], .field input[type="password"], .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+    .field textarea { min-height: 120px; resize: vertical; }
+    .frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .school-checks { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; padding: 2px 0; }
+    .school-checks label {
+      display: flex; gap: 7px; align-items: center;
+      font-size: 14.5px; color: var(--ink); font-weight: 400;
+      text-transform: none; letter-spacing: 0;
+    }
+    .photo-block { margin: 6px 0 0; }
+    .photo-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .photo-row input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 13.5px;
+      background: var(--bg);
+      color: var(--ink);
+      min-width: 0;
+    }
+    .photo-row input:focus { outline: none; border-color: var(--accent); }
+    .photo-row .rm {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 15px;
+      padding: 8px 13px;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+    .photo-row .rm:hover { color: var(--danger); border-color: var(--danger); }
+    .photo-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .modal .err { color: var(--danger); font-size: 13.5px; margin-top: 8px; display: none; }
+    .modal .err.show { display: block; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 560px) {
+      .photos { grid-template-columns: 1fr; }
+      .entry { margin-left: 8px; }
+      .timeline::before { left: 20px; }
+      .entry .dot { left: 14px; }
+      .entry-body { margin-left: 0; }
+      .frow2 { grid-template-columns: 1fr; }
+      .photo-row { grid-template-columns: 1fr; }
+      .modal-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======= header ======= -->
+  <header class="site">
+    <div class="site-inner">
+      <a class="logo" href="#top">The Circle<span>.</span></a>
+      <nav>
+        <a href="#top">Timeline</a>
+        <a href="#about">About</a>
+        <button class="btn owner-btn" id="owner-btn" title="Only the owner can unlock editing">✏️ Edit</button>
+        <button class="btn primary owner-only" id="new-post-btn">＋ New post</button>
+        <button class="btn sm owner-only" id="export-copy" title="Copy all posts as JSON, to paste into index.html">📋 Copy posts</button>
+        <button class="btn sm owner-only" id="export-download" title="Download a ready-to-paste posts file">⬇️ Download</button>
+        <button class="btn sm owner-only" id="reset-posts" title="Discard local edits, restore the POSTS list saved in this file">↺ Reset</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======= hero / dedication ======= -->
+  <div class="hero" id="top">
+    <div class="eyebrow">A journal of friends &amp; timelines of events</div>
+    <h1>John Wendell Calzita</h1>
+    <p class="lead">
+      Every friend he made, every school he called home, and every small
+      event worth remembering — told one entry at a time. The Circle is
+      kept in his honor.
+    </p>
+    <div class="rule"></div>
+    <div class="dedication">✦ Dedicated to <b>John Wendell Calzita</b></div>
+  </div>
+
+  <!-- ======= filter bar: search by school ======= -->
+  <div class="filterbar" id="filterbar"></div>
+
+  <!-- ======= school panel: friends of the selected school ======= -->
+  <div class="results" id="results"></div>
+
+  <!-- ======= timeline (posts render here) ======= -->
+  <main class="timeline" id="timeline"></main>
+
+  <!-- ======= about ======= -->
+  <section class="about" id="about">
+    <div>
+      <h2>About this journal</h2>
+      <p>
+        <b>The Circle</b> is dedicated to <b>John Wendell Calzita</b>. It is a
+        running timeline of his circle — birthdays, reunions, road trips,
+        graduation walks, quiet Sundays — written by the friends who shared
+        them with him.
+      </p>
+      <p>
+        <b>The house rule:</b> every post with a picture must name the people
+        and the place in the picture. That way, years from now, the search
+        will still find them all.
+      </p>
+      <p>
+        <b>Search by school:</b> the timeline can be filtered by the two
+        schools that shaped it. Click one and the friends of that school
+        appear above the posts.
+      </p>
+      <div class="schools">
+        <span>Mother Theresa School</span>
+        <span>De La Salle University - Dasma</span>
+      </div>
+      <p id="total-posts"></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="dedic">In honor of John Wendell Calzita</div>
+    The Circle · made with ♥ · <span id="last-updated"></span>
+  </footer>
+
+  <!-- ======= photo lightbox ======= -->
+  <div class="lightbox" id="lightbox">
+    <button class="close" aria-label="Close">×</button>
+    <img alt="" />
+    <figcaption></figcaption>
+  </div>
+
+  <!-- ======= owner sign-in ======= -->
+  <div class="modal" id="auth-modal">
+    <div class="modal-card narrow">
+      <h3>Owner sign-in</h3>
+      <p class="hint">Editing is reserved for the person who keeps this journal. Enter the owner password to unlock it.</p>
+      <div class="field">
+        <label for="auth-pass">Password</label>
+        <input type="password" id="auth-pass" placeholder="Owner password" autocomplete="off" />
+      </div>
+      <div class="err" id="auth-err">That's not the owner password — try again.</div>
+      <div class="actions">
+        <button class="btn" id="auth-cancel">Cancel</button>
+        <button class="btn primary" id="auth-go">Unlock editing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= post editor ======= -->
+  <div class="modal" id="editor-modal">
+    <div class="modal-card">
+      <h3 id="editor-title">New post</h3>
+
+      <div class="field">
+        <label for="f-title">Title</label>
+        <input type="text" id="f-title" placeholder="e.g. Reunion on the DLSU-D greens" />
+      </div>
+
+      <div class="frow2">
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input type="text" id="f-date" placeholder="e.g. Nov 9, 2026" />
+        </div>
+        <div class="field">
+          <label for="f-location">Location line</label>
+          <input type="text" id="f-location" placeholder="Where it happened" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-story">Story</label>
+        <textarea id="f-story" placeholder="What happened, who was there, what made it worth remembering…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>🎓 School tags</label>
+        <div class="school-checks" id="f-schools"></div>
+      </div>
+
+      <div class="field">
+        <label>📍 Places (comma separated)</label>
+        <input type="text" id="f-places" placeholder="e.g. DLSU-D campus green, The leche flan stall" />
+      </div>
+
+      <div class="field">
+        <label>👤 People in the photos (comma separated)</label>
+        <input type="text" id="f-people" placeholder="e.g. Sofia, Elena, Marcus" />
+      </div>
+
+      <div class="field">
+        <label>Photos — URL + caption, or upload from your device</label>
+        <div class="photo-block" id="f-photos"></div>
+        <div class="photo-tools">
+          <button class="btn sm" id="f-add-url">＋ Add photo by URL</button>
+          <button class="btn sm" id="f-add-file">📁 Upload from device</button>
+        </div>
+      </div>
+
+      <div class="err" id="editor-err"></div>
+
+      <div class="actions">
+        <button class="btn" id="editor-cancel">Cancel</button>
+        <button class="btn primary" id="editor-save">Save post</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ================================================================
+       THE CIRCLE — data & app
+
+       ✏️ TWO WAYS TO EDIT POSTS:
+       1. On the page — click "✏️ Edit" in the header and sign in as
+          owner. Then use ＋ New post / per-post Edit & Delete.
+          Changes are SAVED IN THIS BROWSER (localStorage). To make
+          them permanent in the file itself, use "📋 Copy posts" or
+          "⬇️ Download" and paste the list over POSTS in index.html.
+       2. In the file — edit the POSTS array directly.
+
+       🔐 ONLY YOU CAN EDIT: page editing is locked behind OWNER_PASS.
+       Change the password below to your own secret word.
+       ================================================================ */
+
+    /* 🔐 your owner password — change it to whatever you like */
+    const OWNER_PASS = "jw-circle-2026";
+
+    const SCHOOL_MTS   = "Mother Theresa School";
+    const SCHOOL_DLSUD = "De La Salle University - Dasma";
+    const SCHOOLS = [SCHOOL_MTS, SCHOOL_DLSUD];   // ← search bar chips
+
+    const POSTS = [
+      /* ✏️ Add your next post right here */
+
+      {
+        title: "Reunion on the DLSU-D greens",
+        date: "Nov 1, 2026",
+        location: "De La Salle University - Dasma, Dasmariñas",
+        story:
+          "Five years after John's batch walked out of the gate, the " +
+          "circle went back to the campus green for an afternoon of " +
+          "old benches and older jokes. The gate guard remembered them. " +
+          "The leche flan stall, of course, remembered everyone.",
+        photos: [
+          { src: "https://picsum.photos/seed/circle-dlsud1/900/620", caption: "Sofia, Elena and Marcus on the campus green." },
+          { src: "https://picsum.photos/seed/circle-dlsud2/900/620", caption: "The whole circle back where it started." },
+        ],
+        people: ["Sofia", "Elena", "Marcus", "Noah", "Amara", "Priya"],
+        places: ["De La Salle University - Dasma campus"],
+        schools: [SCHOOL_DLSUD],
+      },
+
+      {
+        title: "Homecoming day at Mother Theresa School",
+        date: "Sep 12, 2026",
+        location: "Mother Theresa School campus",
+        story:
+          "The alumni homecoming brought the old barkada back to the " +
+          "court where John once played intrams basketball. The classroom " +
+          "doorways felt smaller — as they always do — but the laughter " +
+          "carrying down the hallway was exactly the same size.",
+        photos: [
+          { src: "https://picsum.photos/seed/circle-mts1/900/620", caption: "The old classroom, door open as usual." },
+          { src: "https://picsum.photos/seed/circle-mts2/900/620", caption: "Noah, Amara and Priya by the intrams court." },
+        ],
+        people: ["Noah", "Amara", "Priya", "Elena"],
+        places: ["Mother Theresa School courts"],
+        schools: [SCHOOL_MTS],
+      },
+
+      {
+        title: "Road trip to the coast",
+        date: "Aug 15, 2026",
+        location: "Batangas coastline",
+        story:
+          "Two cars, five friends, and a playlist that survived the whole " +
+          "drive down. They ate beach noodles on the hood of the car and " +
+          "swore the fog coming in was somehow part of the plan. " +
+          "John would have called it 'the best Tuesday ever.'",
+        photos: [
+          { src: "https://picsum.photos/seed/circle-coast1/900/620", caption: "Amara and Priya at the shore." },
+          { src: "https://picsum.photos/seed/circle-coast2/900/620", caption: "Beach noodles, à la car hood." },
+        ],
+        people: ["Amara", "Priya", "Noah", "Marcus"],
+        places: ["The Batangas shore"],
+        schools: [],
+      },
+
+      {
+        title: "Poster day on campus",
+        date: "Jun 14, 2026",
+        location: "De La Salle University - Dasma, Dasmariñas",
+        story:
+          "Poster presentation day — months of work pinned to a board and " +
+          "defended in ten minutes. The circle showed up anyway, in the " +
+          "back of the room, pretending to take notes. Marcus cheered " +
+          "quietly with the precision of someone who has been shushed before.",
+        photos: [
+          { src: "https://picsum.photos/seed/circle-poster1/900/620", caption: "The poster board moments before the panel arrived." },
+          { src: "https://picsum.photos/seed/circle-poster2/900/620", caption: "Sofia and Elena in the back row, 'taking notes.'" },
+        ],
+        people: ["Sofia", "Elena", "Marcus"],
+        places: ["DLSU-D College of Science building"],
+        schools: [SCHOOL_DLSUD],
+      },
+
+      {
+        title: "Career talk at MTS, then the usual table",
+        date: "Apr 19, 2026",
+        location: "Mother Theresa School grounds, then the usual café",
+        story:
+          "An alumni career talk for the seniors, and the circle took it " +
+          "shop: them, at the front of the old classroom, telling " +
+          "sixteen-year-olds that plans bend. Afterwards: the usual table, " +
+          "the usual order, and Amara's pancake tradition intact.",
+        photos: [
+          { src: "https://picsum.photos/seed/circle-talk1/900/620", caption: "The circle fielding questions from the seniors." },
+          { src: "https://picsum.photos/seed/circle-talk2/900/620", caption: "The usual table afterwards — Amara's pancakes." },
+        ],
+        people: ["Elena", "Sofia", "Amara", "Noah"],
+        places: ["Mother Theresa School AVR"],
+        schools: [SCHOOL_MTS],
+      },
+    ];
+
+    /* ================================================================
+       Storage, owner state
+       ================================================================ */
+
+    const LS_KEY = "the-circle-posts";
+
+    function loadPosts() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+      } catch (e) {}
+      return POSTS.slice();
+    }
+    function savePosts() {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(posts));
+        return true;
+      } catch (e) {
+        alert("Your browser's storage is full (usually large uploaded photos). " +
+              "The change is visible now but may not survive a reload. " +
+              "Use 📋 Copy posts / ⬇️ Download to keep your work, then trim a photo or two.");
+        return false;
+      }
+    }
+
+    let posts = loadPosts();
+    let activeFilter = null;
+    let editingIndex = null;   // index in POSTS array being edited, or null = new
+
+    /* owner session only lives in this browser tab until sign-out */
+    let isOwner = sessionStorage.getItem("the-circle-owner") === "1";
+
+    const body = document.body;
+    const timelineEl = document.getElementById("timeline");
+    const filterbarEl = document.getElementById("filterbar");
+    const resultsEl = document.getElementById("results");
+    const lightbox = document.getElementById("lightbox");
+    const authModal = document.getElementById("auth-modal");
+    const editorModal = document.getElementById("editor-modal");
+
+    /* ================================================================
+       Rendering
+       ================================================================ */
+
+    function splitList(str) {
+      return str.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
+    /* keep user-typed captions from breaking HTML attributes */
+    const esc = s => String(s ?? "").replace(/"/g, "&quot;");
+
+    function updateOwnerUI() {
+      body.classList.toggle("is-owner", isOwner);
+      document.getElementById("owner-btn").textContent = isOwner ? "🔓 Owner · sign out" : "✏️ Edit";
+    }
+
+    function render() {
+      updateOwnerUI();
+
+      /* --- filtered posts first, the school panel needs them ----- */
+      const shown = activeFilter
+        ? posts.filter(p => (p.schools || []).includes(activeFilter))
+        : posts;
+
+      /* --- school filter bar ------------------------------------ */
+      filterbarEl.innerHTML =
+        `<span class="flabel">Search by school:</span>` +
+        SCHOOLS.map(s =>
+          `<button class="chip school ${activeFilter === s ? "on" : ""}" data-school="${s}">${s}</button>`
+        ).join("") +
+        (activeFilter ? `<button class="chip" data-clear="1">Clear search ✕</button>` : "");
+
+      /* --- school panel: the friends of the chosen school --------- */
+      if (activeFilter) {
+        const friends = [...new Set(shown.flatMap(p => p.people || []))].sort();
+        resultsEl.innerHTML =
+          `<div class="inner">
+             <h3>🎓 ${activeFilter}</h3>
+             <div class="sub">${
+               shown.length
+                 ? `The friends who show up in these posts · ${shown.length} ${shown.length === 1 ? "post" : "posts"} in this timeline`
+                 : `No posts tagged with this school yet.`
+             }</div>
+             <div class="chips">${friends.map(n => `<span class="chip person">${n}</span>`).join("")}</div>
+           </div>`;
+        resultsEl.classList.add("active");
+      } else {
+        resultsEl.classList.remove("active");
+        resultsEl.innerHTML = "";
+      }
+
+      /* --- posts -------------------------------------------------- */
+      timelineEl.innerHTML = "";
+
+      if (!shown.length) {
+        timelineEl.innerHTML =
+          `<div class="entry visible"><div class="entry-body">
+             <p>No posts are tagged “${activeFilter}” yet.</p></div></div>`;
+      }
+
+      shown.forEach((post, i) => {
+        const idx = posts.indexOf(post);
+        const el = document.createElement("article");
+        el.className = "entry";
+        el.style.transitionDelay = `${Math.min(i * 60, 240)}ms`;
+
+        const missingNames = (post.photos || []).length > 0 &&
+          !(post.people || []).length && !(post.places || []).length;
+
+        const chips =
+          (post.schools || []).map(s =>
+            `<button class="chip school ${activeFilter === s ? "on" : ""}" data-school="${s}">${s}</button>`
+          ).join("") +
+          (post.places || []).map(p => `<span class="chip">📍 ${p}</span>`).join("") +
+          (post.people || []).map(p => `<span class="chip person">${p}</span>`).join("");
+
+        el.innerHTML = `
+          <span class="dot"></span>
+          <div class="entry-body">
+            <time>📅 ${post.date}</time>
+            <h2>${post.title}</h2>
+            ${post.location ? `<div class="place-line">${post.location}</div>` : ""}
+            ${post.story ? `<p class="story">${post.story}</p>` : ""}
+            ${(post.photos || []).length ? `
+              <div class="photos ${post.photos.length === 1 ? "single" : ""}">
+                ${post.photos.map(p => `
+                  <figure class="photo" data-src="${esc(p.src)}" data-caption="${esc(p.caption)}">
+                    <img src="${esc(p.src)}" alt="${esc(p.caption)}" loading="lazy" />
+                  </figure>`).join("")}
+              </div>` : ""}
+            <aside class="who ${missingNames ? "incomplete" : ""}">
+              <div class="label">Named in this album</div>
+              <div class="chips">${chips || "<em>no names yet</em>"}</div>
+              <div class="warn">⚠️ House rule: name the people and place in these photos before publishing.</div>
+            </aside>
+            <div class="owner-actions owner-only">
+              <button class="btn sm" data-edit="${idx}">✏️ Edit</button>
+              <button class="btn sm danger" data-del="${idx}">🗑 Delete</button>
+            </div>
+          </div>`;
+
+        /* school chips filter the timeline */
+        el.querySelectorAll("[data-school]").forEach(chip =>
+          chip.addEventListener("click", () => {
+            activeFilter = activeFilter === chip.dataset.school ? null : chip.dataset.school;
+            render();
+            document.getElementById("top").scrollIntoView({ behavior: "smooth" });
+          })
+        );
+
+        /* photos open the lightbox */
+        el.querySelectorAll(".photo").forEach(fig =>
+          fig.addEventListener("click", () => openLightbox(fig))
+        );
+
+        /* owner: edit & delete */
+        el.querySelector("[data-edit]")?.addEventListener("click", () => openEditor(idx));
+        el.querySelector("[data-del]")?.addEventListener("click", () => {
+          if (!confirm("Delete this post from the timeline?")) return;
+          posts.splice(idx, 1);
+          savePosts();
+          render();
+        });
+
+        timelineEl.appendChild(el);
+      });
+    }
+
+    /* lightbox ------------------------------------------------------ */
+    function openLightbox(fig) {
+      lightbox.querySelector("img").src = fig.dataset.src;
+      lightbox.querySelector("figcaption").textContent = fig.dataset.caption;
+      lightbox.classList.add("open");
+    }
+    lightbox.querySelector(".close").addEventListener("click", () => lightbox.classList.remove("open"));
+    lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.classList.remove("open"); });
+
+    /* filter bar clicks --------------------------------------------- */
+    filterbarEl.addEventListener("click", e => {
+      const t = e.target;
+      if (t.dataset.school !== undefined) {
+        activeFilter = activeFilter === t.dataset.school ? null : t.dataset.school;
+        render();
+      } else if (t.dataset.clear) {
+        activeFilter = null;
+        render();
+      }
+    });
+
+    /* ================================================================
+       Owner sign-in
+       ================================================================ */
+
+    function openAuth() {
+      document.getElementById("auth-err").classList.remove("show");
+      document.getElementById("auth-pass").value = "";
+      authModal.classList.add("open");
+      document.getElementById("auth-pass").focus();
+    }
+    function tryAuth() {
+      const pass = document.getElementById("auth-pass").value;
+      if (pass === OWNER_PASS) {
+        isOwner = true;
+        sessionStorage.setItem("the-circle-owner", "1");
+        authModal.classList.remove("open");
+        render();
+      } else {
+        document.getElementById("auth-err").classList.add("show");
+      }
+    }
+    function signOut() {
+      isOwner = false;
+      sessionStorage.removeItem("the-circle-owner");
+      render();
+    }
+    document.getElementById("owner-btn").addEventListener("click", () => {
+      isOwner ? signOut() : openAuth();
+    });
+    document.getElementById("auth-go").addEventListener("click", tryAuth);
+    document.getElementById("auth-cancel").addEventListener("click", () => authModal.classList.remove("open"));
+    document.getElementById("auth-pass").addEventListener("keydown", e => {
+      if (e.key === "Enter") tryAuth();
+    });
+
+    /* ================================================================
+       Post editor
+       ================================================================ */
+
+    const fPhotos = document.getElementById("f-photos");
+
+    function addPhotoRow(src = "", caption = "") {
+      const row = document.createElement("div");
+      row.className = "photo-row";
+      row.innerHTML = `
+        <input type="text" class="pr-src" placeholder="Photo URL" />
+        <input type="text" class="pr-cap" placeholder="Caption (this photo's caption can name people too)" />
+        <button class="rm" title="Remove this photo" type="button">✕</button>`;
+      row.querySelector(".pr-src").value = src;
+      row.querySelector(".pr-cap").value = caption;
+      row.querySelector(".rm").addEventListener("click", () => row.remove());
+      fPhotos.appendChild(row);
+    }
+
+    /* upload from device: shrink to max 1200px & save as JPEG data-URL
+       so it fits comfortably in browser storage */
+    function pickPhoto() {
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = "image/*";
+      inp.onchange = () => {
+        const file = inp.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          const max = 1200;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          addPhotoRow(c.toDataURL("image/jpeg", 0.82), "");
+        };
+        img.src = url;
+      };
+      inp.click();
+    }
+
+    function openEditor(idx) {
+      editingIndex = idx;
+      const isNew = idx === null;
+      const post = isNew
+        ? { title: "", date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+            location: "", story: "", photos: [], people: [], places: [], schools: [] }
+        : posts[idx];
+
+      document.getElementById("editor-title").textContent = isNew ? "✏️ New post" : "✏️ Edit post";
+      document.getElementById("f-title").value = post.title || "";
+      document.getElementById("f-date").value = post.date || "";
+      document.getElementById("f-location").value = post.location || "";
+      document.getElementById("f-story").value = post.story || "";
+      document.getElementById("f-places").value = (post.places || []).join(", ");
+      document.getElementById("f-people").value = (post.people || []).join(", ");
+
+      /* school checkboxes */
+      const schoolBox = document.getElementById("f-schools");
+      schoolBox.innerHTML = "";
+      SCHOOLS.forEach(s => {
+        const lab = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = s;
+        cb.checked = (post.schools || []).includes(s);
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(s));
+        schoolBox.appendChild(lab);
+      });
+
+      /* photo rows */
+      fPhotos.innerHTML = "";
+      (post.photos || []).forEach(p => addPhotoRow(p.src, p.caption));
+
+      document.getElementById("editor-err").classList.remove("show");
+      editorModal.classList.add("open");
+      document.getElementById("f-title").focus();
+    }
+
+    function closeEditor() {
+      editorModal.classList.remove("open");
+      editingIndex = null;
+    }
+
+    document.getElementById("editor-cancel").addEventListener("click", closeEditor);
+    document.getElementById("f-add-url").addEventListener("click", () => addPhotoRow());
+    document.getElementById("f-add-file").addEventListener("click", pickPhoto);
+    document.getElementById("new-post-btn").addEventListener("click", () => openEditor(null));
+
+    document.getElementById("editor-save").addEventListener("click", () => {
+      const err = document.getElementById("editor-err");
+
+      const title = document.getElementById("f-title").value.trim();
+      const date = document.getElementById("f-date").value.trim();
+      const location = document.getElementById("f-location").value.trim();
+      const story = document.getElementById("f-story").value.trim();
+      const places = splitList(document.getElementById("f-places").value);
+      const people = splitList(document.getElementById("f-people").value);
+      const schools = [...document.querySelectorAll("#f-schools input:checked")].map(c => c.value);
+
+      const photos = [...fPhotos.querySelectorAll(".photo-row")].map(row => ({
+        src: row.querySelector(".pr-src").value.trim(),
+        caption: row.querySelector(".pr-cap").value.trim(),
+      })).filter(p => p.src);
+
+      /* validation */
+      const errors = [];
+      if (!title) errors.push("Give the post a title.");
+      if (!date) errors.push("Give the post a date (e.g. Nov 9, 2026).");
+      /* 🔒 the house rule, enforced: photos must be named */
+      if (photos.length && !people.length && !places.length)
+        errors.push("House rule: name the people and place in these photos before publishing.");
+
+      if (errors.length) {
+        err.innerHTML = errors.join("<br>");
+        err.classList.add("show");
+        return;
+      }
+
+      const post = { title, date, location, story, photos, people, places, schools };
+      if (editingIndex === null) {
+        posts.unshift(post);           // new posts appear at the top
+      } else {
+        posts[editingIndex] = post;
+      }
+      savePosts();
+      closeEditor();
+      render();
+    });
+
+    /* ================================================================
+       Make local edits permanent in the file
+       ================================================================ */
+
+    document.getElementById("export-copy").addEventListener("click", () => {
+      const text = JSON.stringify(posts, null, 2);
+      const done = () => alert("All posts copied to your clipboard!\n\nOpen index.html and paste this over the POSTS list to make the edits permanent.");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, () => {
+          alert("Copy failed. Use the ⬇️ Download button instead.");
+        });
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); }
+        catch (e) { alert("Copy failed. Use the ⬇️ Download button instead."); }
+        ta.remove();
+      }
+    });
+
+    document.getElementById("export-download").addEventListener("click", () => {
+      const blob = new Blob([
+        "// the-circle-posts — generated " + new Date().toLocaleString() + "\n" +
+        "// To make your page edits permanent: open index.html, find\n" +
+        "// \"const POSTS = [ ... ];\" and replace the whole list with this one.\n\n" +
+        "const POSTS = " + JSON.stringify(posts, null, 2) + ";\n",
+      ], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "the-circle-posts.js";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById("reset-posts").addEventListener("click", () => {
+      if (!confirm("Reset the timeline to the version saved inside index.html?\nYour edits kept in this browser will be discarded.")) return;
+      localStorage.removeItem(LS_KEY);
+      posts = POSTS.slice();
+      render();
+    });
+
+    /* escape closes any overlay, fade entries in on scroll ----------- */
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        lightbox.classList.remove("open");
+        authModal.classList.remove("open");
+        closeEditor();
+      }
+    });
+
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(en => {
+        if (en.isIntersecting) en.target.classList.add("visible");
+      }),
+      { threshold: 0.08 }
+    );
+    new MutationObserver(() =>
+      timelineEl.querySelectorAll(".entry").forEach(e => observer.observe(e))
+    ).observe(timelineEl, { childList: true });
+
+    /* initial run ---------------------------------------------------- */
+    render();
+
+    /* live counts for the about card --------------------------------- */
+    function updateCounts() {
+      const byMTS   = posts.filter(p => (p.schools || []).includes(SCHOOL_MTS)).length;
+      const byDLSUD = posts.filter(p => (p.schools || []).includes(SCHOOL_DLSUD)).length;
+      document.getElementById("total-posts").textContent =
+        `Current count: ${posts.length} posts — ${byMTS} at Mother Theresa School, ${byDLSUD} at De La Salle University - Dasma.`;
+      document.getElementById("last-updated").textContent =
+        `last updated ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+    }
+    updateCounts();
+    const origRender = render;
+    render = function () { origRender(); updateCounts(); };
+  </script>
+</body>
+</html>
