@@ -653,17 +653,27 @@
        ✏️ TWO WAYS TO EDIT POSTS:
        1. On the page — click "✏️ Edit" in the header and sign in as
           owner. Then use ＋ New post / per-post Edit & Delete.
-          Changes are SAVED IN THIS BROWSER (localStorage). To make
-          them permanent in the file itself, use "📋 Copy posts" or
-          "⬇️ Download" and paste the list over POSTS in index.html.
-       2. In the file — edit the POSTS array directly.
+          Changes SAVE TO THE CLOUD immediately and appear on every
+          device and for every visitor.
+       2. In the file — edit the POSTS array. It seeds the timeline
+          until the first cloud save (and covers offline viewing).
 
-       🔐 ONLY YOU CAN EDIT: page editing is locked behind OWNER_PASS.
-       Change the password below to your own secret word.
+       🔐 ONLY YOU CAN EDIT: the password is checked by the backend
+       (the OWNER_PASS env var on Netlify) and never lives in this
+       file. Set / change it with:  netlify env:set OWNER_PASS ...
        ================================================================ */
 
-    /* 🔐 your owner password — change it to whatever you like */
-    const OWNER_PASS = "jw-circle-2026";
+    /* ☁️ WAIT — how does it save now?
+       Instead of only touching your browser, the editor now saves
+       through a tiny password-checked backend, so posts live in the
+       cloud and appear for EVERYONE (on your phone too). The owner
+       password itself is checked on that server — it's never stored
+       in this file. */
+
+    const NETLIFY_API_SITE = "https://circle-jwc.netlify.app";
+    const API = location.hostname.includes("netlify.app")
+      ? "/.netlify/functions/posts"
+      : NETLIFY_API_SITE + "/.netlify/functions/posts";
 
     const SCHOOL_MTS   = "Mother Theresa School";
     const SCHOOL_DLSUD = "De La Salle University - Dasma";
@@ -767,33 +777,77 @@
        Storage, owner state
        ================================================================ */
 
-    const LS_KEY = "the-circle-posts";
+    const LS_KEY = "the-circle-posts";   // small offline cache only
 
-    function loadPosts() {
+    async function loadPosts() {
+      /* the cloud database is now the source of truth */
+      try {
+        const r = await fetch(API, { headers: { Accept: "application/json" } });
+        if (r.ok) {
+          const j = await r.json();
+          if (Array.isArray(j.posts) && j.posts.length) return j.posts;
+          if (j.posts === null) {
+            /* database not seeded yet? use whatever's in the file,
+               or the offline cache, until the first save populates it */
+          }
+        }
+      } catch (e) { /* offline or backend down — fall back below */ }
+
+      /* fallbacks: the offline cache, else the POSTS list baked into the file */
       try {
         const raw = localStorage.getItem(LS_KEY);
-        if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr) && arr.length) return arr;
+        }
       } catch (e) {}
       return POSTS.slice();
     }
-    function savePosts() {
+
+    async function savePosts() {
+      const pass = sessionStorage.getItem("the-circle-pass") || "";
       try {
-        localStorage.setItem(LS_KEY, JSON.stringify(posts));
-        return true;
+        const r = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Owner-Pass": pass },
+          body: JSON.stringify({ posts }),
+        });
+        if (r.status === 401) {
+          alert("The server didn't accept the owner password — sign in again (✏️ Edit button) and retry.");
+          signOut();
+          openAuth();
+          return false;
+        }
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          alert("Save failed: " + (j.error || "HTTP " + r.status) +
+                "\n(Uploaded photos have a size limit — if you added a huge photo, try a smaller one.)");
+          return false;
+        }
       } catch (e) {
-        alert("Your browser's storage is full (usually large uploaded photos). " +
-              "The change is visible now but may not survive a reload. " +
-              "Use 📋 Copy posts / ⬇️ Download to keep your work, then trim a photo or two.");
+        /* couldn't reach the cloud — keep going but warn */
+        const okOffline = (() => {
+          try { localStorage.setItem(LS_KEY, JSON.stringify(posts)); return true; } catch (e2) { return false; }
+        })();
+        alert("Couldn't reach the cloud (" + e.message + "). " +
+              (okOffline
+                ? "The edit is saved in THIS browser only for now — sync it to the cloud by saving again once you're back online."
+                : "It couldn't be stored locally either — copy the posts before closing."));
         return false;
       }
+
+      /* also refresh the local cache so offline opens still show content */
+      try { localStorage.setItem(LS_KEY, JSON.stringify(posts)); } catch (e) {}
+      return true;
     }
 
     let posts = loadPosts();
     let activeFilter = null;
     let editingIndex = null;   // index in POSTS array being edited, or null = new
 
-    /* owner session only lives in this browser tab until sign-out */
-    let isOwner = sessionStorage.getItem("the-circle-owner") === "1";
+    /* the typed password lives only in this browser tab's session
+       storage — the real check happens on the server */
+    let isOwner = !!sessionStorage.getItem("the-circle-pass");
 
     const body = document.body;
     const timelineEl = document.getElementById("timeline");
@@ -962,11 +1016,33 @@
       authModal.classList.add("open");
       document.getElementById("auth-pass").focus();
     }
-    function tryAuth() {
+    async function tryAuth() {
       const pass = document.getElementById("auth-pass").value;
-      if (pass === OWNER_PASS) {
+      if (!pass) {
+        document.getElementById("auth-err").textContent = "Type the owner password first.";
+        document.getElementById("auth-err").classList.add("show");
+        return;
+      }
+      document.getElementById("auth-err").classList.remove("show");
+      document.getElementById("auth-go").disabled = true;
+      let ok = false;
+      try {
+        const r = await fetch(API, { headers: { "X-Owner-Pass": pass } });
+        if (r.ok) {
+          const j = await r.json();
+          ok = j.auth === true;
+          if (!ok) document.getElementById("auth-err").textContent = "Wrong owner password — try again.";
+        } else {
+          document.getElementById("auth-err").textContent = "The sign-in service answered oddly (HTTP " + r.status + ").";
+        }
+      } catch (e) {
+        document.getElementById("auth-err").textContent =
+          "Couldn't reach the backend (" + e.message + "). You can edit offline, but saving needs the connection.";
+      }
+      document.getElementById("auth-go").disabled = false;
+      if (ok) {
         isOwner = true;
-        sessionStorage.setItem("the-circle-owner", "1");
+        sessionStorage.setItem("the-circle-pass", pass);
         authModal.classList.remove("open");
         render();
       } else {
@@ -975,7 +1051,7 @@
     }
     function signOut() {
       isOwner = false;
-      sessionStorage.removeItem("the-circle-owner");
+      sessionStorage.removeItem("the-circle-pass");
       render();
     }
     document.getElementById("owner-btn").addEventListener("click", () => {
@@ -1158,10 +1234,10 @@
       URL.revokeObjectURL(a.href);
     });
 
-    document.getElementById("reset-posts").addEventListener("click", () => {
-      if (!confirm("Reset the timeline to the version saved inside index.html?\nYour edits kept in this browser will be discarded.")) return;
-      localStorage.removeItem(LS_KEY);
+    document.getElementById("reset-posts").addEventListener("click", async () => {
+      if (!confirm("Reset the timeline to the list baked inside index.html and save that to the cloud?")) return;
       posts = POSTS.slice();
+      await savePosts();
       render();
     });
 
@@ -1184,10 +1260,11 @@
       timelineEl.querySelectorAll(".entry").forEach(e => observer.observe(e))
     ).observe(timelineEl, { childList: true });
 
-    /* initial run ---------------------------------------------------- */
-    render();
-
-    /* live counts for the about card --------------------------------- */
+    /* initial run: pull posts from the cloud, then render ----------- */
+    (async () => {
+      posts = await loadPosts();
+      render();
+    })();
     function updateCounts() {
       const byMTS   = posts.filter(p => (p.schools || []).includes(SCHOOL_MTS)).length;
       const byDLSUD = posts.filter(p => (p.schools || []).includes(SCHOOL_DLSUD)).length;
